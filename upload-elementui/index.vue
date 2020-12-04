@@ -1,10 +1,19 @@
 <template>
   <div class="container">
-    <el-upload :limit="limit" :action="uploadUrl" list-type="picture-card" :on-preview="handlePictureCardPreview" :on-remove="handleRemove" :on-success="handleListSuccess" :file-list="fileList" :data="data">
+    <el-upload
+      :limit="limit"
+      :action="uploadUrl"
+      list-type="picture-card"
+      :on-preview="handlePictureCardPreview"
+      :on-remove="handleRemove"
+      :on-success="handleListSuccess"
+      :file-list="fileList"
+      :data="data"
+    >
       <i class="el-icon-plus" />
     </el-upload>
     <el-dialog :visible.sync="dialogVisible">
-      <img width="100%" :src="dialogImageUrl" alt="">
+      <img width="100%" :src="dialogImageUrl" alt="" />
     </el-dialog>
   </div>
 </template>
@@ -14,32 +23,53 @@ export default {
   props: {
     limit: {
       type: Number,
-      default: 1
-    }
+      default: 1,
+    },
+    url: {
+      type: String,
+      default: '',
+    },
   },
   data() {
     return {
       dialogImageUrl: '',
       dialogVisible: false,
-      uploadUrl: 'https://dev-cloud-services.haier-ioc.com/cloudApi/datacenter/file/uploadFile',
+      uploadUrl:
+        'https://dev-cloud-services.haier-ioc.com/cloudApi/datacenter/file/uploadFile',
       data: {
         useDay: 1,
-        path: 'three-wings-bird/activity',
-        projectId: 4
+        path: 'refundfile',
+        projectId: 4,
       },
       fileList: [],
       pathList: [],
       allUrlString: '',
-      imgIp: this.proce
+      imgIp: this.proce,
     }
   },
+  mounted() {
+    if (!this.url) return
+    const obj = {
+      name: '图片',
+      url:
+        'https://yswl-cloud-service.obs.cn-north-4.myhuaweicloud.com/' +
+        this.url,
+    }
+    this.fileList.push(obj)
+  },
   methods: {
+    // 清空图片数组
+    handleRemoveempty() {
+      this.fileList = []
+    },
     handleRemove(file, fileList) {
       // 重置预览数据
       this.fileList = fileList
       // 删除路径数组内对应的元素
       for (const index in this.pathList) {
-        if (`${process.env.VUE_APP_FILE_URL}/${this.pathList[index]}` === file.url) {
+        if (
+          `${process.env.VUE_APP_FILE_URL}/${this.pathList[index]}` === file.url
+        ) {
           this.pathList.splice(index, 1)
         }
       }
@@ -48,7 +78,7 @@ export default {
       const data = {
         fileLsit: this.fileList,
         pathList: this.pathList,
-        allUrlString: this.allUrlString
+        allUrlString: this.allUrlString,
       }
       this.$emit('upload_over', data)
       console.log('删除', this.fileList, this.pathList, this.allUrlString)
@@ -61,7 +91,7 @@ export default {
       if (res.code === 200) {
         const obj = {
           name: '图片',
-          url: res.data.ip + '/' + res.data.fileUrl
+          url: res.data.ip + '/' + res.data.fileUrl,
         }
         // 添加入预览数组
         this.fileList.push(obj)
@@ -72,14 +102,15 @@ export default {
         const data = {
           fileLsit: this.fileList,
           pathList: this.pathList,
-          allUrlString: this.allUrlString
+          allUrlString: this.allUrlString,
         }
         this.$emit('upload_over', data)
         console.log('新增', this.fileList, this.pathList, this.allUrlString)
+        this.$emit('onsuccess', this.allUrlString)
       } else {
         this.$message.error('上传图片失败')
       }
-    }
-  }
+    },
+  },
 }
 </script>
